@@ -31,20 +31,15 @@ app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
-// app.get("/", (req, res) => {
-//   res.send("Hello!");
-// });
-
-// app.get("/hello", (req, res) => {
-//   const templateVars = { greeting: "Hello World!" };
-//   res.render("hello_world", templateVars);
-// });
-
 app.get("/urls", (req, res) => {
   const templateVars = {
     username: req.cookies["username"],
     urls: urlDatabase };
   res.render("urls_index", templateVars);
+});
+
+app.get("/urls/register", (req, res) => {
+  res.render("register");
 });
 
 app.get("/urls/new", (req, res) => {
@@ -94,6 +89,11 @@ app.post("/logout", (req, res) => {
   res.clearCookie('username', req.body["username"]);
   res.redirect(`/urls`);
 });
+
+app.post("/register", (req, res) => {
+  res.redirect(`/urls`);
+});
+
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
