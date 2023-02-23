@@ -127,7 +127,9 @@ app.post("/login", (req, res) => {
   const password = req.body.password;
   for (const userId in users) {
     if (users[userId].email === email && users[userId].password === password) {
+      res.cookie('userId', userId);
       res.redirect(`/urls`);
+      return;
     }
   }
   return res.status(400).send('email or password not correct!');
@@ -158,7 +160,6 @@ app.post("/register", (req, res) => {
     password: password
   };
   users[userId] = user;
-  res.cookie('userId', userId);
   res.redirect(`/login`);
 });
 
