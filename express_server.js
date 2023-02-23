@@ -61,21 +61,34 @@ app.get("/urls", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
-  res.render("register");
+  const templateVars = {
+    email: null
+  };
+  res.render("register", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
-  const id = req.cookies["userId"];
-  const userEmail = users[id].email;
-  const templateVars = {
-    email: userEmail
-  };
+  let templateVars = {};
+  if (req.cookies["userId"]){
+    const id = req.cookies["userId"];
+    const userEmail = users[id].email;
+    templateVars = {
+      email: userEmail
+    };
+  } else {
+    templateVars = {
+      email: null
+    };
+  }
   res.render("urls_new", templateVars);
 
 });
 
 app.get("/login", (req, res) => {
-  res.render(`login`);
+  const templateVars = {
+    email: null
+  };
+  res.render(`login`, templateVars);
 });
 
 app.get("/urls/:id", (req, res) => {
@@ -110,13 +123,19 @@ app.post("/urls/:id/edit", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  // res.cookie('email', req.body["email"]);
-  res.redirect(`/urls`);
+  const email = req.body.email;
+  const password = req.body.password;
+  for (const userId in users) {
+    if (users[userId].email === email && users[userId].password === password) {
+      res.redirect(`/urls`);
+    }
+  }
+  return res.status(400).send('email or password not correct!');
 });
 
 app.post("/logout", (req, res) => {
   res.clearCookie('userId', req.body["userId"]);
-  res.redirect(`/urls`);
+  res.redirect(`/login`);
 });
 
 app.post("/register", (req, res) => {
@@ -140,7 +159,7 @@ app.post("/register", (req, res) => {
   };
   users[userId] = user;
   res.cookie('userId', userId);
-  res.redirect(`/urls`);
+  res.redirect(`/login`);
 });
 
 app.listen(PORT, () => {
