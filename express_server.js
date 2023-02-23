@@ -35,16 +35,16 @@ const users = {
   },
 };
 
-// function generateRandomString() {
-//   const possibleChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-//   let string = '';
+function generateRandomString() {
+  const possibleChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let string = '';
 
-//   for (let i = 0; i < 6; i++) {
-//     string += possibleChars.charAt(Math.floor(Math.random() * possibleChars.length));
-//   }
+  for (let i = 0; i < 6; i++) {
+    string += possibleChars.charAt(Math.floor(Math.random() * possibleChars.length));
+  }
 
-//   return string;
-// }
+  return string;
+}
 
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
@@ -139,9 +139,14 @@ app.post("/urls", (req, res) => {
   if (!req.cookies["userId"]){
     return res.status(400).send('please login first');
   }
+  let id = generateRandomString();
   let userId = req.cookies["userId"];
-  urlDatabase[userId] = req.body.longURL;
-  res.redirect(`/urls/${userId}`);
+  console.log(req.body.longURL);
+  urlDatabase[id] = {
+    longURL: req.body.longURL,
+    userID: userId
+  }
+  res.redirect(`/urls/${id}`);
 });
 
 app.post("/urls/:id/delete", (req, res) => {
