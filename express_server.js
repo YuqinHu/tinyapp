@@ -125,12 +125,25 @@ app.get("/login", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
+  let templateVar = {};
+  if (req.cookies["userId"]) {
+    const id = req.cookies["userId"];
+    const userEmail = users[id].email;
+    templateVar = {
+      email: userEmail,
+      urls: urlDatabase };
+  } else {
+    templateVar = {
+      email: null,
+      urls: urlDatabase };
+  }
   const id = req.params.id;
   const longUrl = urlDatabase[id].longURL;
   if (!urlDatabase[id]){
     return res.status(400).send('URL not found');
   }
-  const templateVars = { id, longUrl };
+  const templateVars = { ...templateVar, id, longUrl };
+  console.log(templateVars);
   res.render("urls_show", templateVars);
 });
 
@@ -141,7 +154,6 @@ app.post("/urls", (req, res) => {
   }
   let id = generateRandomString();
   let userId = req.cookies["userId"];
-  console.log(req.body.longURL);
   urlDatabase[id] = {
     longURL: req.body.longURL,
     userID: userId
