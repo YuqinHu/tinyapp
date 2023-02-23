@@ -11,8 +11,14 @@ app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  b6UTxQ: {
+    longURL: "https://www.tsn.ca",
+    userID: "aJ48lW",
+  },
+  i3BoGr: {
+    longURL: "https://www.google.ca",
+    userID: "aJ48lW",
+  },
 };
 
 
@@ -29,16 +35,16 @@ const users = {
   },
 };
 
-function generateRandomString() {
-  const possibleChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let string = '';
+// function generateRandomString() {
+//   const possibleChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+//   let string = '';
 
-  for (let i = 0; i < 6; i++) {
-    string += possibleChars.charAt(Math.floor(Math.random() * possibleChars.length));
-  }
+//   for (let i = 0; i < 6; i++) {
+//     string += possibleChars.charAt(Math.floor(Math.random() * possibleChars.length));
+//   }
 
-  return string;
-}
+//   return string;
+// }
 
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
@@ -85,13 +91,15 @@ app.get("/urls/new", (req, res) => {
     const id = req.cookies["userId"];
     const userEmail = users[id].email;
     templateVars = {
-      email: userEmail
+      email: userEmail,
+      urls: urlDatabase
     };
     res.render("urls_new", templateVars);
     return;
   } else {
     templateVars = {
-      email: null
+      email: null,
+      urls: urlDatabase
     };
     res.render(`login`, templateVars);
   }
@@ -118,11 +126,11 @@ app.get("/login", (req, res) => {
 
 app.get("/urls/:id", (req, res) => {
   const id = req.params.id;
-  const longURL = urlDatabase[id];
-  if (!longURL){
+  const longUrl = urlDatabase[id].longURL;
+  if (!urlDatabase[id]){
     return res.status(400).send('URL not found');
   }
-  const templateVars = { id, longURL };
+  const templateVars = { id, longUrl };
   res.render("urls_show", templateVars);
 });
 
@@ -131,10 +139,9 @@ app.post("/urls", (req, res) => {
   if (!req.cookies["userId"]){
     return res.status(400).send('please login first');
   }
-  let tinyURL = generateRandomString();
-  urlDatabase[tinyURL] = req.body.longURL;
-  console.log(urlDatabase);
-  res.redirect(`/urls/${tinyURL}`);
+  let userId = req.cookies["userId"];
+  urlDatabase[userId] = req.body.longURL;
+  res.redirect(`/urls/${userId}`);
 });
 
 app.post("/urls/:id/delete", (req, res) => {
@@ -150,7 +157,7 @@ app.post("/urls/:id", (req, res) => {
 
 app.post("/urls/:id/edit", (req, res) => {
   const id = req.params.id;
-  urlDatabase[id] = req.body.longURL;
+  urlDatabase[id].longURL = req.body.longURL;
   res.redirect(`/urls`);
 });
 
