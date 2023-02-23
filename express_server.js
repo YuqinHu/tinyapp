@@ -119,6 +119,9 @@ app.get("/login", (req, res) => {
 app.get("/urls/:id", (req, res) => {
   const id = req.params.id;
   const longURL = urlDatabase[id];
+  if (!longURL){
+    return res.status(400).send('URL not found');
+  }
   const templateVars = { id, longURL };
   res.render("urls_show", templateVars);
 });
@@ -126,8 +129,7 @@ app.get("/urls/:id", (req, res) => {
 
 app.post("/urls", (req, res) => {
   if (!req.cookies["userId"]){
-    res.redirect(`/login`);
-    return;
+    return res.status(400).send('please login first');
   }
   let tinyURL = generateRandomString();
   urlDatabase[tinyURL] = req.body.longURL;
