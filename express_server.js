@@ -61,9 +61,21 @@ app.get("/urls", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
-  const templateVars = {
-    email: null
-  };
+  let templateVars = {};
+  if (req.cookies["userId"]){
+    const id = req.cookies["userId"];
+    const userEmail = users[id].email;
+    templateVars = {
+      email: userEmail,
+      urls: urlDatabase
+    };
+    res.render("urls_index", templateVars);
+    return;
+  } else {
+    templateVars = {
+      email: null
+    };
+  }
   res.render("register", templateVars);
 });
 
@@ -85,9 +97,21 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-  const templateVars = {
-    email: null
-  };
+  let templateVars = {};
+  if (req.cookies["userId"]){
+    const id = req.cookies["userId"];
+    const userEmail = users[id].email;
+    templateVars = {
+      email: userEmail,
+      urls: urlDatabase
+    };
+    res.render("urls_index", templateVars);
+    return;
+  } else {
+    templateVars = {
+      email: null
+    };
+  }
   res.render(`login`, templateVars);
 });
 
