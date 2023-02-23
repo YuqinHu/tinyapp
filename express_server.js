@@ -45,15 +45,22 @@ app.get("/urls.json", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const id = req.cookies["userId"];
-  const userEmail = users[id].email;
-  const templateVars = {
-    email: userEmail,
-    urls: urlDatabase };
+  let templateVars = {};
+  if (req.cookies["userId"]) {
+    const id = req.cookies["userId"];
+    const userEmail = users[id].email;
+    templateVars = {
+      email: userEmail,
+      urls: urlDatabase };
+  } else {
+    templateVars = {
+      email: null,
+      urls: urlDatabase };
+  }
   res.render("urls_index", templateVars);
 });
 
-app.get("/urls/register", (req, res) => {
+app.get("/register", (req, res) => {
   res.render("register");
 });
 
@@ -67,12 +74,17 @@ app.get("/urls/new", (req, res) => {
 
 });
 
+app.get("/login", (req, res) => {
+  res.render(`login`);
+});
+
 app.get("/urls/:id", (req, res) => {
   const id = req.params.id;
   const longURL = urlDatabase[id];
   const templateVars = { id, longURL };
   res.render("urls_show", templateVars);
 });
+
 
 app.post("/urls", (req, res) => {
   let tinyURL = generateRandomString();
@@ -98,7 +110,7 @@ app.post("/urls/:id/edit", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  res.cookie('email', req.body["email"]);
+  // res.cookie('email', req.body["email"]);
   res.redirect(`/urls`);
 });
 

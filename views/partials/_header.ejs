@@ -25,10 +25,12 @@
           <button type="submit" class="btn btn-primary">Logout</button>
           </form>
       <% } else{ %> 
-        <form class="form-inline" action="/login" method="POST">
-        <input class="form-control" type="text" name="email" placeholder="email" style="width: 150px; margin: 1em">
-        <button type="submit" class="btn btn-primary">Sign in</button>
-        </form>
+        <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+          <div class="navbar-nav">
+            <a class="nav-item nav-link" href="/login">Login</a>
+            <a class="nav-item nav-link" href="/register">Register</a>
+          </div>
+        </div>
       <% } %>
     </div>
   </nav>
