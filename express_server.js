@@ -35,6 +35,17 @@ const users = {
   },
 };
 
+function urlsForUser(id){
+  let urlData = {};
+  for (data in urlDatabase) {
+    if (urlDatabase[data]["userID"] === id){
+      console.log(urlDatabase[data])
+      urlData[data] = urlDatabase[data];
+    }
+  }
+  return urlData;
+}
+
 function generateRandomString() {
   const possibleChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   let string = '';
@@ -51,17 +62,20 @@ app.get("/urls.json", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
+  if (!req.cookies["userId"]){
+    return res.status(400).send('please login first');
+  }
   let templateVars = {};
   if (req.cookies["userId"]) {
     const id = req.cookies["userId"];
     const userEmail = users[id].email;
     templateVars = {
       email: userEmail,
-      urls: urlDatabase };
+      urls: urlsForUser(id) };
   } else {
     templateVars = {
       email: null,
-      urls: urlDatabase };
+      urls: null };
   }
   res.render("urls_index", templateVars);
 });
@@ -125,6 +139,9 @@ app.get("/login", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
+  if (!req.cookies["userId"]){
+    return res.status(400).send('please login first');
+  }
   let templateVar = {};
   if (req.cookies["userId"]) {
     const id = req.cookies["userId"];
@@ -143,7 +160,6 @@ app.get("/urls/:id", (req, res) => {
     return res.status(400).send('URL not found');
   }
   const templateVars = { ...templateVar, id, longUrl };
-  console.log(templateVars);
   res.render("urls_show", templateVars);
 });
 
