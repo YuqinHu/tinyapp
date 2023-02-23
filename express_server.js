@@ -87,13 +87,14 @@ app.get("/urls/new", (req, res) => {
     templateVars = {
       email: userEmail
     };
+    res.render("urls_new", templateVars);
+    return;
   } else {
     templateVars = {
       email: null
     };
+    res.render(`login`, templateVars);
   }
-  res.render("urls_new", templateVars);
-
 });
 
 app.get("/login", (req, res) => {
@@ -124,8 +125,13 @@ app.get("/urls/:id", (req, res) => {
 
 
 app.post("/urls", (req, res) => {
+  if (!req.cookies["userId"]){
+    res.redirect(`/login`);
+    return;
+  }
   let tinyURL = generateRandomString();
   urlDatabase[tinyURL] = req.body.longURL;
+  console.log(urlDatabase);
   res.redirect(`/urls/${tinyURL}`);
 });
 
