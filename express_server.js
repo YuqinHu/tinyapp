@@ -39,7 +39,6 @@ function urlsForUser(id){
   let urlData = {};
   for (data in urlDatabase) {
     if (urlDatabase[data]["userID"] === id){
-      console.log(urlDatabase[data])
       urlData[data] = urlDatabase[data];
     }
   }
@@ -139,9 +138,26 @@ app.get("/login", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
+  let check = 0;
+  const id = req.params.id;
+  for (data in urlDatabase) {
+    if (data === id){
+      check += 1;
+    }
+  }
+
+  if (check === 0) {
+    return res.status(400).send('url not found');
+  }
+
   if (!req.cookies["userId"]){
     return res.status(400).send('please login first');
   }
+
+  if(urlDatabase[id]["userID"] !== req.cookies["userId"]){
+    return res.status(400).send('You cannot access this URL');
+  }
+
   let templateVar = {};
   if (req.cookies["userId"]) {
     const id = req.cookies["userId"];
@@ -154,8 +170,8 @@ app.get("/urls/:id", (req, res) => {
       email: null,
       urls: urlDatabase };
   }
-  const id = req.params.id;
   const longUrl = urlDatabase[id].longURL;
+
   if (!urlDatabase[id]){
     return res.status(400).send('URL not found');
   }
@@ -178,7 +194,21 @@ app.post("/urls", (req, res) => {
 });
 
 app.post("/urls/:id/delete", (req, res) => {
+  let check = 0;
   const id = req.params.id;
+  for (data in urlDatabase) {
+    if (data === id){
+      check += 1;
+    }
+  }
+
+  if (check === 0) {
+    return res.status(400).send('url not found');
+  }
+
+  if(urlDatabase[id]["userID"] !== req.cookies["userId"]){
+    return res.status(400).send('You cannot delete this URL');
+  }
   delete urlDatabase[id];
   res.redirect(`/urls`);
 });
@@ -189,7 +219,22 @@ app.post("/urls/:id", (req, res) => {
 });
 
 app.post("/urls/:id/edit", (req, res) => {
+  let check = 0;
   const id = req.params.id;
+  for (data in urlDatabase) {
+    if (data === id){
+      check += 1;
+    }
+  }
+
+  if (check === 0) {
+    return res.status(400).send('url not found');
+  }
+
+  if(urlDatabase[id]["userID"] !== req.cookies["userId"]){
+    return res.status(400).send('You cannot edit this URL');
+  }
+
   urlDatabase[id].longURL = req.body.longURL;
   res.redirect(`/urls`);
 });
