@@ -250,15 +250,15 @@ app.post("/urls/:id/edit", (req, res) => {
 app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  for (const userId in users) {
-    if (users[userId].email === email && bcrypt.compareSync(password, users[userId].password)) {
-      req.session.userId = userId;
-      res.redirect(`/urls`);
-      return;
-    }
+  const user = getUserByEmail(email, users);
+  if (!user){
+    return res.status(400).send('email not found!');
   }
-  
-  return res.status(400).send('email or password not correct!');
+  if (!bcrypt.compareSync(password, user.password)) {
+    return res.status(403).send('password not correct');
+  }
+  req.session.userId = user.id;
+  res.redirect(`/urls`);
 });
 
 app.post("/logout", (req, res) => {
@@ -270,23 +270,21 @@ app.post("/register", (req, res) => {
   const userId = Math.random().toString(36).substring(2, 5);
   const email = req.body.email;
   const password = req.body.password;
+  const user = getUserByEmail(email, users);
   const hashedPassword = bcrypt.hashSync(password, 10);
   if (!email || !password) {
     return res.status(400).send('please provide a username AND password');
   } 
-
-  for (const userId in users) {
-    if (users[userId].email === email) {
-      return res.status(400).send('Email be used');
-    }
+  if (user){
+    return res.status(400).send('email has been register, pls use other email');
   }
   req.session.userId = userId;
-  const user = {
+  const userInfo = {
     id: userId,
     email: email,
     password: hashedPassword
   };
-  users[userId] = user;
+  users[userId] = userInfo;
   res.redirect(`/urls`);
 });
 
