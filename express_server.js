@@ -18,6 +18,7 @@ app.use(cookieSession({
   maxAge: 24 * 60 * 60 * 1000 // 24 hours
 }))
 
+
 const urlDatabase = {
   b6UTxQ: {
     longURL: "https://www.tsn.ca",
@@ -43,6 +44,7 @@ const users = {
   },
 };
 
+//
 function urlsForUser(id){
   let urlData = {};
   for (data in urlDatabase) {
@@ -53,6 +55,7 @@ function urlsForUser(id){
   return urlData;
 }
 
+//geneate random string (url id)
 function generateRandomString() {
   const possibleChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   let string = '';
@@ -64,28 +67,33 @@ function generateRandomString() {
   return string;
 }
 
-
+//JSON string representing the entire urlDatabase object
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
+
 app.get("/urls", (req, res) => {
   const userId = req.session["userId"];
+
+  //if user is not logged in return with a relevant error message
   if (!userId){
     return res.status(400).send('please login first');
   }
+
+  //if user is logged in, jump to home page
   let templateVars = {};
   const userEmail = users[userId].email;
   templateVars = {
       email: userEmail,
       urls: urlsForUser(userId) 
   };
-
   res.render("urls_index", templateVars);
 });
 
 app.get("/register", (req, res) => {
   let templateVars = {};
+  //if user is logged in redirects to home page
   if (req.session["userId"]){
     const id = req.session["userId"];
     const userEmail = users[id].email;
@@ -100,11 +108,13 @@ app.get("/register", (req, res) => {
       email: null
     };
   }
+  //if user is not logged in render to register page
   res.render("register", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
   let templateVars = {};
+  //check login or not
   if (req.session["userId"]){
     const id = req.session["userId"];
     const userEmail = users[id].email;
@@ -125,6 +135,7 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/login", (req, res) => {
   let templateVars = {};
+  //check login or not
   if (req.session["userId"]){
     res.redirect('/urls');
     return;
@@ -137,6 +148,7 @@ app.get("/login", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
+  //check url found or not
   let check = 0;
   const id = req.params.id;
   for (data in urlDatabase) {
@@ -144,15 +156,17 @@ app.get("/urls/:id", (req, res) => {
       check += 1;
     }
   }
-
   if (check === 0) {
     return res.status(400).send('url not found');
   }
 
+  //check login or not
   if (!req.session["userId"]){
     return res.status(400).send('please login first');
   }
 
+
+  //check has right to go to url page or not
   if(urlDatabase[id]["userID"] !== req.session["userId"]){
     return res.status(400).send('You cannot access this URL');
   }
@@ -170,7 +184,6 @@ app.get("/urls/:id", (req, res) => {
       urls: urlDatabase };
   }
   const longUrl = urlDatabase[id].longURL;
-
   if (!urlDatabase[id]){
     return res.status(400).send('URL not found');
   }
@@ -180,9 +193,12 @@ app.get("/urls/:id", (req, res) => {
 
 
 app.post("/urls", (req, res) => {
+  //check if not login
   if (!req.session["userId"]){
     return res.status(400).send('please login first');
   }
+
+  //if already login
   let id = generateRandomString();
   let userId = req.session["userId"];
   urlDatabase[id] = {
@@ -193,6 +209,7 @@ app.post("/urls", (req, res) => {
 });
 
 app.post("/urls/:id/delete", (req, res) => {
+  //check url has been created or not
   let check = 0;
   const id = req.params.id;
   for (data in urlDatabase) {
@@ -200,11 +217,11 @@ app.post("/urls/:id/delete", (req, res) => {
       check += 1;
     }
   }
-
   if (check === 0) {
     return res.status(400).send('url not found');
   }
 
+  //check has right to delete url page or not
   if(urlDatabase[id]["userID"] !== req.session["userId"]){
     return res.status(400).send('You cannot delete this URL');
   }
@@ -218,6 +235,7 @@ app.post("/urls/:id", (req, res) => {
 });
 
 app.post("/urls/:id/edit", (req, res) => {
+  //check url has been created or not
   let check = 0;
   const id = req.params.id;
   for (data in urlDatabase) {
@@ -225,11 +243,11 @@ app.post("/urls/:id/edit", (req, res) => {
       check += 1;
     }
   }
-
   if (check === 0) {
     return res.status(400).send('url not found');
   }
 
+  //check has right to edit url page or not
   if(urlDatabase[id]["userID"] !== req.session["userId"]){
     return res.status(400).send('You cannot edit this URL');
   }
@@ -242,9 +260,13 @@ app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
   const user = getUserByEmail(email, users);
+
+  //check email has been register or not
   if (!user){
     return res.status(400).send('email not found!');
   }
+
+  //check password
   if (!bcrypt.compareSync(password, user.password)) {
     return res.status(403).send('password not correct');
   }
@@ -258,17 +280,27 @@ app.post("/logout", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
+  //create user id
   const userId = Math.random().toString(36).substring(2, 5);
+
   const email = req.body.email;
   const password = req.body.password;
   const user = getUserByEmail(email, users);
+
+  //secure password
   const hashedPassword = bcrypt.hashSync(password, 10);
+
+  //check does user fullied email and password
   if (!email || !password) {
     return res.status(400).send('please provide a username AND password');
   } 
+
+  //check email has been register or not
   if (user){
     return res.status(400).send('email has been register, pls use other email');
   }
+
+  
   req.session.userId = userId;
   const userInfo = {
     id: userId,
