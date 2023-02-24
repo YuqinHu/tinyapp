@@ -122,13 +122,7 @@ app.get("/urls/new", (req, res) => {
 app.get("/login", (req, res) => {
   let templateVars = {};
   if (req.cookies["userId"]){
-    const id = req.cookies["userId"];
-    const userEmail = users[id].email;
-    templateVars = {
-      email: userEmail,
-      urls: urlDatabase
-    };
-    res.render("urls_index", templateVars);
+    res.redirect('/urls');
     return;
   } else {
     templateVars = {
@@ -243,15 +237,14 @@ app.post("/urls/:id/edit", (req, res) => {
 app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  const hashedPassword = bcrypt.hashSync(password, 10);
-
   for (const userId in users) {
-    if (users[userId].email === email && bcrypt.compareSync(password, hashedPassword)) {
+    if (users[userId].email === email && bcrypt.compareSync(password, users[userId].password)) {
       res.cookie('userId', userId);
       res.redirect(`/urls`);
       return;
     }
   }
+  
   return res.status(400).send('email or password not correct!');
 });
 
@@ -265,7 +258,6 @@ app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
   const hashedPassword = bcrypt.hashSync(password, 10);
-
   if (!email || !password) {
     return res.status(400).send('please provide a username AND password');
   } 
