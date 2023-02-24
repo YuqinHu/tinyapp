@@ -1,6 +1,6 @@
 const express = require("express");
 const cookieSession = require('cookie-session');
-
+const { getUserByEmail } = require("./helpers.js");
 
 const bcrypt = require("bcryptjs");
 const app = express();
@@ -62,15 +62,6 @@ function generateRandomString() {
   }
 
   return string;
-}
-
-const getUserByEmail = function(email, database) {
-  for (let key in users) {
-    if (users[key].email === email) {
-      return users[key];
-    }
-  }
-  return false;
 }
 
 
