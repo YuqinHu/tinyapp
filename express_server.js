@@ -3,6 +3,7 @@ const cookieSession = require('cookie-session');
 const { getUserByEmail } = require("./helpers.js");
 
 const bcrypt = require("bcryptjs");
+const { render } = require("ejs");
 const app = express();
 const PORT = 8080; // default port 8080
 
@@ -66,6 +67,29 @@ function generateRandomString() {
 
   return string;
 }
+
+app.get("/", (req, res) => {
+  const userId = req.session["userId"];
+  //if user is not logged in return with a relevant error message
+  if (userId){
+  //if user is logged in, jump to home page
+    let templateVars = {};
+    const userEmail = users[userId].email;
+    templateVars = {
+      email: userEmail,
+      urls: urlsForUser(userId) 
+    };
+    res.render("urls_index", templateVars);
+  } else {
+    templateVars = {
+      email: null,
+      urls: urlDatabase
+    };
+    res.render(`login`, templateVars);
+  }
+
+});
+
 
 //JSON string representing the entire urlDatabase object
 app.get("/urls.json", (req, res) => {
