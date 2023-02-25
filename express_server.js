@@ -147,6 +147,17 @@ app.get("/login", (req, res) => {
   res.render(`login`, templateVars);
 });
 
+app.get("/u/:id", (req, res) => {
+  //short link to longurl
+  const shortID = req.params.id;
+  const longURL = urlDatabase[shortID].longURL;
+  if (!longURL) {
+    res.status(404).send("URL not found");
+    return;
+  }
+  res.redirect(longURL);
+});
+
 app.get("/urls/:id", (req, res) => {
   //check url found or not
   let check = 0;
